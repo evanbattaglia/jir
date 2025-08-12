@@ -1,0 +1,11 @@
+#!/usr/bin/env ruby
+
+# NOTE: this file is supposed to match jir/bin/jir, just without
+# the bundler stuff (as bundix already carefully crafts a ruby with
+# every dependency for us).
+
+# Run the app
+require 'tabry/cli/builder'
+require_relative '../lib/jir/cli.rb'
+
+Tabry::CLI::Builder.new("#{__dir__}/../tabry/jir.json", Jir::CLI).run(ARGV)

@@ -1,0 +1,185 @@
+default_project: MYPROJ
+default_board_id: 39
+
+fields:
+  team:
+    key: customfield_19010
+    type: string
+    aliases: teams
+
+aliases:
+  teams: 
+    Team1: abc37246-1ff6-4e4e-9486-ec2fcf74d92e
+    Team2: abc44232-d78b-417c-ae76-fa13c7b49eaa
+
+users: # Gotten from: jir s 'assignee="Evan Battaglia"' --max 1 assignee_account_id
+  evan: abc123412345678901234567
+  alice: def123456789034567893456
+  bob: ghi123456789012345678901
+
+ticket_aliases:
+  myepic1: MYPROJ-1000
+  myepic2: MYPROJ-1002
+
+searches:
+  subteam2: '"Team[Team]" = abc37246-1ff6-4e4e-9486-ec2fcf74d92e'
+  subteam1: '"Team[Team]" = abc44232-d78b-417c-ae76-fa13c7b49eaa'
+  notsubteam2: '"Team[Team]" != abc37246-1ff6-4e4e-9486-ec2fcf74d92e'
+  notsubteam1: '"Team[Team]" != abc44232-d78b-417c-ae76-fa13c7b49eaa'
+  noteam: '"Team[Team]" != abc37246-1ff6-4e4e-9486-ec2fcf74d92e and "Team[Team]" != abc44232-d78b-417c-ae76-fa13c7b49eaa'
+
+  open: "statusCategory != 3 and status != Support"
+  backlog: "sprint=null and statusCategory != 3 and status != Support"
+  closed: "statusCategory = 3 or status = Support"
+
+  evan: "assignee='Evan Battaglia'"
+  alice: "assignee='Alice Hacker'"
+  bob: "assignee='Bob Hacker'"
+
+  # Epics
+  myepic1: "'epic link' = 'MYPROJ-1000'"
+  myepic2: "'epic link' = 'MYPROJ-1002'"
+  myepics: "'epic link' in ('MYPROJ-1000', 'MYPROJ-1002')"
+
+  subteam1currentsprint:
+    order: rank
+    sprint: subteam1current
+  subteam1previoussprint:
+    order: rank
+    sprint: subteam1previous
+  subteam1nextsprint:
+    order: rank
+    sprint: subteam1next
+
+outputs:
+  # Style used in "sprint" above
+  sprint:
+    jq:
+      - "-c"
+      - >
+          .issues |
+          .[] | {
+            key: .key,
+            status: ((
+                ({
+                  "To Do":1,"To Do Alternate":1,
+                  "In Progress":2,
+                  "Done":3,
+                })[.fields.status.name] | tostring
+              ) + ". " + .fields.status.name),
+            summary: .fields.summary,
+            assignee: .fields.assignee.displayName,
+            points: .fields.customfield_10001,
+          }
+
+  classic: # sort of a class JIRA experience -- "Browse" mode -- has common fields (todo comments)
+    jq:
+      - >
+        .issues[] | {
+          key: .key,
+          summary: .fields.summary,
+          status: .fields.status.name,
+          storypoints: .fields.customfield_10001,
+          assignee: .fields.assignee.displayName,
+          reporter: .fields.reporter.displayName,
+          epic: {key: .fields.parent.key, summary: .fields.parent.fields.summary},
+          labels: .fields.labels,
+          issuetype: .fields.issuetype.name,
+          description: .fields.description
+        }
+
+  # Get fields used in 'ji' TUI sprint view (with details pre-loaded)
+  ji:
+    api_version_3: true
+    fields: assignee,description,comment,parent,customfield_19001,summary,customfield_10001,issuetype,labels,reporter,status,customfield_10123
+    order: rank
+    jq:
+      - "-c"
+      - >
+          .issues |
+          .[] | {
+            key: .key,
+            num: .key|split("-")[1],
+            status: ((
+                ({
+                  "To Do":1,"To Do Alternate":1,
+                  "In Progress":2,
+                  "Done":3,
+                })[.fields.status.name] | tostring
+              ) + ". " + .fields.status.name),
+            summary: .fields.summary,
+            assignee: (.fields.assignee.displayName|try split(" ")[0] catch null),
+            pts: .fields.customfield_10001,
+            commits: (try (.fields.customfield_10123.content[].content|map(select(.text // ""|contains("https"))|.text
+              | sub(".*/myproj-frontend-repo/.*";"fe")
+              | sub(".*/myproj-microservice-repo/.*";"ms")
+            )|join(" ")) catch null // null),
+            epic: .fields.parent.key,
+            epic_summary: .fields.parent.fields.summary,
+            issuetype: .fields.issuetype.name,
+            labels: (.fields.labels|join(",")),
+            raw: (.|tostring)
+          }
+
+# Define sprints. Example where a project has 2 subteams and we need
+# to look at the sprint dates and names to figure out next/previous
+# sprints.
+sprints:
+  previous:
+    state: closed
+    all_pages: true
+    jq: >
+      map(
+        select(.name | contains("subteam1") | not)
+        | select(.startDate)
+      )
+      | sort_by(.startDate) | reverse
+
+  next:
+    state: future
+    jq: >
+      def parseDate(dateString): # We need to cut off milliseconds (e.g. ".000") for jq to recognize the date.
+        (dateString|(sub("\\.\\d\\d\\dZ";"Z") | fromdate));
+      def isRecent(dateString): # 2 weeks
+        dateString and (parseDate(dateString) - now < 1209600);
+      map(
+        select(.name | contains("subteam1") | not)
+        | select(.name == "subteam2: Future Work" or isRecent(.startDate))
+      ) | sort_by(.startDate or "")
+
+  current:
+    state: active
+    jq: >
+      map(
+        select(.name | contains("subteam1") | not)
+      )
+
+  subteam1previous:
+    state: closed
+    all_pages: true
+    jq: >
+      map(
+        select(.name | contains("subteam1"))
+        | select(.startDate)
+      )
+      | sort_by(.startDate) | reverse
+
+  subteam1next:
+    state: future
+    jq: >
+      def parseDate(dateString): # We need to cut off milliseconds (e.g. ".000") for jq to recognize the date.
+        (dateString|(sub("\\.\\d\\d\\dZ";"Z") | fromdate));
+      def isRecent(dateString): # 2 weeks
+        dateString and (parseDate(dateString) - now < 1209600);
+      map(
+        select(.name | contains("subteam1"))
+        | select(.name == "subteam1: Future Work" or isRecent(.startDate))
+      ) | sort_by(.startDate or "")
+
+  subteam1current:
+    state: active
+    jq: >
+      map(
+        select(.name | contains("subteam1"))
+      )
+

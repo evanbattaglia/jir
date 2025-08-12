@@ -1,0 +1,298 @@
+# After making changes to this file, compile to JSON with tabry-rs:
+# tabry compile < jir.tabry > jir.json
+# See https://github.com/evanbattaglia/tabry-rs
+
+cmd jir
+desc "
+  JIRA à la carte
+
+  To setup:
+  * Get an API token at https://id.atlassian.com/manage-profile/security/api-tokens
+  * Run `gopass insert jir` and add the token in the form `myemail@mycompany.com:TOKEN`
+  * Run `jir list builtin-configs` to see the list of available built-in configs and run
+    `jir install-builtin-config <config-name>`
+"
+flag verbose,v "When running HTTP commands, show the command (warning: contains auth)"
+flag dry-run "When running HTTP commands, show the command but don't execute (warning: contains auth)"
+
+# TODO: hopefully this will get built into tabry soon
+sub completion "Generate tab completion function to be added to your shell's profile" {
+  sub bash "Generate tab completion function for bash or zsh. Add the output to your ~/.bash_profile or ~/.zsh_profile, or save the contents to a file and source the file from your ~/.bash_profile or ~/.zsh_profile"
+  sub fish "Generate tab completion function for fish"
+  sub json "Show JSON configuration for use with tabry-rs (faster tab completion)"
+}
+
+sub list {
+  sub searches "List searches in config"
+  sub outputs "List output styles in config"
+  sub fields "List standard fields and field aliases" {
+    flag autocomplete-commas "For internal usage, for autocomplete with commas"
+  }
+  sub field-types "List field types"
+  sub config "Show merged config as YML"
+  sub builtin-configs "Show list of built-in configs for use with install-builtin-config"
+  sub users "List users for use in user_list fields (users hash in config file)"
+  sub state-names "List state names (state_names in config file)"
+  sub issue-types "List issue types for a particular project or the default project" {
+    opt arg project
+  }
+  sub link-verbs "List link names (both directions) valid for use in jir link"
+  sub named-sprints "List named sprints defined in the configs"
+  sub ticket-aliases "List ticket_aliases defined in configs"
+}
+
+sub install-builtin-config "Install a config from the built-in configs bundled with jir to the ~/.config/jir directory" {
+  arg config-name "Run `jir list builtin-configs` to get a list of available configs" { opts shell "jir list builtin-configs" }
+}
+
+sub links "Commands having to do with links between tickets" {
+  sub link "Create a link between tickets" {
+    include @ticket-key
+    arg verb { opts shell "jir list link-verbs" }
+    arg ticket2-key "Second ticket key"
+    flagarg comment
+  }
+  # TODO: unlink/remove link
+}
+
+sub search,s {
+  desc "
+    Search using saved queries, multiple saved queries separated by commas, a JQL query, or
+    a mix
+
+    Example yml config:
+      ls: 'summary ~ %1'
+      resolved-in-last: 'resolved >= -%1r' # 'r' means raw (unescaped) arg
+      grep: 'description ~ %1'
+      open: 'statusCategory != 3'
+    Example search:
+      jir search open,ls,resolvedinlast,foo=bar somenamedoutput somethinginsummary 10w
+  "
+
+  arg name-or-query "Name of search in config, or a JQL query" {
+    opts shell "jir list searches"
+  }
+
+  include @output-arg-and-flags
+
+  flag global,g "global search -- do not include project=<default_project from config>"
+  opt varargs search_args {
+    title "search arg"
+    desc "Arguments to named search. Must match max number %1, %2, %3, etc. in the named search. If given, output must also be given"
+  }
+
+  flag all-pages "Run search out output repeatedly to get all pages"
+}
+
+sub get,g,show {
+  desc "Get a ticket"
+  include @ticket-key
+  include @output-arg-and-flags
+}
+
+sub changelog,cl {
+  desc "Show changelog for a ticket"
+  include @ticket-key
+  flag raw,r "Output raw JSON"
+  flag all-pages "Get all changelogs my paginating through all results"
+}
+
+sub web,w "Open ticket in default web browser" {
+  include @ticket-keys
+}
+
+sub transition "Transition a ticket to another state" {
+  include @ticket-key
+  arg state-name "Name of state to transition to, from state_names in config file (see jir list state-names)" { opts shell "jir list state-names" }
+}
+
+sub assign "Assign a ticket to a user" {
+  include @ticket-key
+  arg user "A user in the users list in the config, or 'null' or empty string to empty out the assignee field" {
+    opts shell "jir list users"
+    opts const null
+  }
+}
+
+sub comment "Comment on an issue (launches EDITOR, ot reads from STDIN if not a tty)" {
+  include @ticket-key
+  opt arg filename "Filename to use as comment instead of using editor or STDIN" { opts file }
+}
+
+
+sub http {
+  flag no-api "Don't add an 'api'"
+  flag api-version-3,3 "Use API version 3"
+  flag agile "Use Agile Api (1.0)"
+
+  arg url
+  opt varargs args
+
+  sub get {
+    # also the default if just use `jir http url`
+    arg url
+    opt varargs args
+  }
+  sub post {
+    arg url
+    opt varargs args
+  }
+  sub put {
+    arg url
+    opt varargs args
+  }
+}
+
+defargs @output-arg-and-flags {
+  opt arg output "Name of output style in config" {
+    opts shell "jir list outputs"
+  }
+
+  flagarg max-results,max,m "max results"
+  flagarg fields,f "restrict fields to return -- comma-separated" {
+    opts shell "jir list fields --autocomplete-commas"
+  }
+  flag api-version-3,3 "Use API Version 3 (output format will differ)"
+  flag rendered-fields "Send expand=renderedFields"
+  flag render-to-markdown "Render ticket to markdown (for compatible output types such as 'all')"
+  flag glow "Pass markdown to glow (implies --render-to-markdown)"
+  flag pipe "Pipe to command (mainly useful for overriding pipe specified by output in config)"
+  flagarg order "ORDER BY clause (overrides any 'order' in the search/output)"
+}
+
+sub field,fields,f {
+  sub set,put,p,s {
+    desc "Set a field"
+    include @ticket-key
+    arg field { opts shell "jir list fields" }
+    varargs field-values "To set a list type to an empty list, use an empty string for a value"
+    flagarg type,t "
+      Specify how to convert the value given on command line to a JSON value for JIRA.
+      Examples include 'raw' (raw JSON, use for numbers) and 'string'.
+      See 'jir list field-value-types' for a list.
+      This can be given in the jir.yml under field as the field's 'type', or overridden with this flag.
+    " { opts shell "jir list field-types" }
+  }
+
+  sub add,a {
+    desc "Add a value to a list field"
+    include @ticket-key
+    arg field { opts shell "jir list fields" }
+    varargs field-values
+  }
+
+  sub remove,rm {
+    desc "Remove a value from a list field"
+    include @ticket-key
+    arg field { opts shell "jir list fields" }
+    varargs field-values
+  }
+}
+
+sub render "Render ADF or tickets to markdown; consider instead using get/search --render-to-markdown/--glow" {
+  sub text_to_adf "(EXPERIMENTAL) STDIN Pretty Text to ADF as with create --pretty-description"
+
+  sub raw "Render ADF JSON to markdown" {
+    opt varargs files "Defaults to stdin" {
+      title "adf json file"
+      opts file
+    }
+  }
+
+  sub ticket,tickets "Render ticket to markdown -- output from search or should have description/comment/comments fields" {
+    opt varargs files "Defaults to stdin" { opts file }
+  }
+}
+
+sub agile "Actions that touch the agile API -- boards, sprints" {
+  sub boards "List boards for a given project" {
+    opt arg project "Defaults to the default_project in config. Use empty string for all"
+  }
+
+  sub sprints "List sprints for a board" {
+    opt arg board-id "Defaults to the default_board_id in config"
+    flag active-and-future "Show future and active sprints"
+    flag future-only "Show only future sprints"
+    flag closed,previous "Show closed (previous) sprints"
+    flag all-pages "Paginate thru results to show all sprints"
+    flag summary "Show simplified view of id, state, name, startDate, endDate, state"
+  }
+
+  sub named-sprint "Show a named sprint as defined in the configs" {
+    arg name {
+      desc "
+        Name of sprint in 'sprints' object in config (valid keys in each named sprint
+        config: 'state', 'all_pages', 'jq', 'board_id')
+      "
+      opts shell "jir list named-sprints"
+    }
+    flag all "Show all sprints, not just the first"
+  }
+
+  # maybe move board sprints here, or make an alias sprint/sprints list?
+  sub move-issue,move,mv "Move issue to another sprint" {
+    arg sprint-id "Numeric sprint ID. 'backlog', or named sprint from the config file" {
+      opts const backlog
+      opts shell "jir list named-sprints"
+    }
+    varargs ticket-keys "'MYPROJECT-123' or just '123' if you have default_project defined" { title ticket-key }
+    flagarg before-issue
+    flagarg after-issue
+  }
+
+  sub rank "Update rank of an issue or multiple issues" {
+    flag before,b "Move tickets to before the first ticket given"
+    flag after,a "Move tickets to after the first ticket given. Default."
+    arg reference-ticket "'MYPROJECT-123' or just '123' if you have default_project defined"
+    varargs ticket-keys "'MYPROJECT-123' or just '123' if you have default_project defined" {
+      title "ticket key"
+    }
+  }
+}
+
+sub attach "Attachment-related commands / Attach file to ticket" {
+  include @ticket-key
+  arg filename "File to attach" { opts file }
+
+  sub download,d "Download one attachment" {
+    arg attachment_id "Use 'jir get 1234 attachments' to get the id"
+  }
+
+  sub download-all,da "Download all attachments for an issue" {
+    include @ticket-key
+  }
+}
+
+sub create "Create ticket" {
+  arg issue-type { opts shell "jir list issue-types" }
+  arg summary
+  opt varargs fields "Fields in format fieldname=fieldval1,fieldval2,fieldval3"
+  flagarg description-file,d,f "Filename to load description, otherwise will use editor"
+  flag project,p "Project to use (default is to use default_project defined in config)"
+  flag json-description "Use API version 3 ADF JSON description"
+  flag pretty-description "Construct ADF JSON from a text file (EXPERIMENTAL)"
+}
+
+sub watchers,watcher,watch "Watcher actions" {
+  sub get,ls "List watchers" @ticket-key
+  sub add "Add a watcher" @ticket-key @opt-arg-user 
+  sub remove,delete,del,rm "Remove a watcher" @ticket-key @opt-arg-user
+}
+
+defargs @opt-arg-user {
+  opt arg user "A user in the users list in the config (if not given looks for a user named \"default\" in the config)" {
+    opts shell "jir list users"
+  }
+}
+
+defargs @ticket-key {
+  arg ticket-key "'MYPROJECT-123'. If you have default_project defined, you can use just '123', or 'git/MYREF' to get the ticket out of a git commit message (also supported: use 'git' for HEAD, 'git@~2' for two commits)" {
+    opts shell "jir list ticket-aliases"
+  }
+}
+
+defargs @ticket-keys {
+  arg ticket-keys "'MYPROJECT-123' or 'git:ref' as with ticket-key arg in jir show. But, you can also give multiple tickets/git refs joined with a comma." {
+    opts shell "jir list ticket-aliases"
+  }
+}

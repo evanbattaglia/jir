@@ -1,0 +1,32 @@
+
+searches:
+  simple_string: abc=123
+  simple_hash:
+    jql: def=456
+    max_results: 789
+  with_default_output:
+    jql: "something=bla"
+    output: some_output
+  all_config_fields:
+    jql: "a=1"
+    jq: ["-c"]
+    max_results: 123
+    fields: "key"
+    rendered_fields: true
+    api_version_3: true
+  search_with_unknown_output:
+    output: bogus
+
+outputs:
+  jq_hash:
+    jq:
+      - -c
+      - .issues[]
+    fields: key,summary
+    max_results: 200
+  jq_array:
+    - -cr
+    - .issues[].key
+  some_output: ["-c"]
+  all: {}
+

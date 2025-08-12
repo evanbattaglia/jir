@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+
+page_number="$1"
+[[ -z "$page_number" ]] && echo "Usage: $0 <page_number>" && echo "Usage: $0 <page_number> | glow -p" && exit 1
+jir http get --no-api /wiki/api/v2/pages/"$page_number"?body-format=atlas_doc_format | jq -r .body.atlas_doc_format.value | jir render raw
+

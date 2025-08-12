@@ -1,0 +1,156 @@
+# Basic JIRA/jir configs, potential useful for any company's JIRA installation
+
+# to create an API token go to
+# https://id.atlassian.com/manage-profile/security/api-tokens
+# Then in your auth backend (e.g. gopass) add the key "jir" with value
+# "me@my.com:TOKENGENERATEDFROMJIRAUI"
+
+auth_backend: gopass
+
+searches:
+  # Searches.
+  # Each search can also be a hash with: fields, max_results, output (default output type), jq...
+  # Output, if given, will override hash values
+  bugs: "issuetype = Bug"
+  # alias
+  bug: "issuetype = Bug"
+  olderthan60days: "created < -60d"
+  olderthan30days: "created < -30d"
+  created1h: "created>=-1h"
+  created1d: "created>=-1d"
+  created1w: "created>=-7d"
+  created1mo: "created>=-31d"
+  unassigned: "assignee is empty"
+  me: "assignee=currentUser()"
+  my: "assignee=currentUser()"
+  reportedbyme: "reporter=currentUser()"
+
+  ls: "summary ~ %1"
+  grep: "description ~ %1"
+  key: "key = %1"
+  epic: "'epic link' = %1"
+  isepic: "issuetype = Epic"
+
+  # Usage example: jir s resolved-in-last,ls summary 10w mysearchstr
+  #  -> find all tickets resolved in last 10 weeks with "mysearchstr" in summary
+  resolved-in-last: 'resolved >= -%1r'
+outputs:
+  all: {}
+
+  markdown:
+    fields: "*all"
+    api_version_3: true
+    render_to_markdown: true
+
+  glow:
+    fields: "*all"
+    api_version_3: true
+    glow: true
+
+  count:
+    max_results: 0
+    jq: ["-r", ".total"]
+  keys:
+    fields: key
+    jq: ["-r", ".issues[].key"]
+  key: # alias for keys
+    fields: key
+    jq: ["-r", ".issues[].key"]
+  summary-text:
+    fields: summary
+    jq:
+      - "-r"
+      - ".issues[]|.fields.summary"
+  summary:
+    fields: summary,status
+    jq:
+      - "-c"
+      - ".issues[]|{key: .key,summary:.fields.summary,status:.fields.status.name}"
+  labels:
+    fields: summary,status,labels
+    jq:
+      - "-c"
+      - ".issues[]|{key: .key,summary:.fields.summary,status:.fields.status.name,labels:.fields.labels}"
+  compact:
+    jq:
+      - "-c"
+      - >
+          .issues[] |
+          {key: .key} + (
+            .fields | with_entries(
+              select(.key|startswith("custom")|not)|
+              select(.value==null|not)|
+              select(.value==[]|not)
+            )
+          )
+  description:
+    fields: summary,status,description
+    jq:
+      - "-c"
+      - ".issues[]|{key: .key,status:.fields.status.name}+(.fields|del(.status))"
+  description-rendered:
+    fields: description
+    rendered_fields: true
+    jq:
+      - "-r"
+      - >
+          .issues[] | .renderedFields.description
+  description-v3:
+    fields: description
+    api_version_3: true
+    jq:
+      - >
+          .issues[] | .fields.description
+  parent:
+    fields: parent,summary
+    jq:
+      - "-c"
+      - >
+        .issues[] | {key: .key, summary: .fields.summary, parent_key: .fields.parent.key, parent_summary: .fields.parent.fields.summary}
+  epic: # alias for 'parent'
+    fields: parent,summary
+    jq:
+      - "-c"
+      - >
+        .issues[] | {key: .key, summary: .fields.summary, parent_key: .fields.parent.key, parent_summary: .fields.parent.fields.summary}
+
+  # To get accountId for use with "users" hash
+  # Usage: jir s 'assignee="Evan Battaglia"' assignee_account_id
+  assignee_account_id:
+    fields: assignee
+    max_results: 1
+    jq:
+      - "-cr"
+      - .issues[0].fields.assignee.accountId
+  links:
+    jq:
+      - "-c"
+      - >
+        .issues[]|.fields.issuelinks[] as $link|{key,inward_issue_key:$link.inwardIssue.key,link_type:$link.type.id,link_type_name:$link.type.name,link_type_inward:$link.type.inward,link_type_outward:$link.type.outward,outward_issue_key:$link.outwardIssue.key}
+
+  attachments:
+    fields: attachment
+    api_version_3: true
+    jq:
+      - "-c"
+      - >
+        .issues[] |
+        .fields.attachment[] | {
+          id, created, filename, size,
+          author:.author.displayName,
+        }
+
+  # Requires mlr
+  attachments-table:
+    fields: attachment
+    api_version_3: true
+    jq:
+      - "-c"
+      - >
+        .issues[] |
+        .fields.attachment[] | {
+          id, created, filename, size,
+          author:.author.displayName,
+        }
+    pipe: 'mlr --ijsonl --opprint cat'
+

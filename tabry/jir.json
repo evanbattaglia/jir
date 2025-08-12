@@ -1,0 +1,1448 @@
+{
+  "cmd": "jir",
+  "main": {
+    "name": null,
+    "aliases": [],
+    "description": "JIRA à la carte\n\nTo setup:\n* Get an API token at https://id.atlassian.com/manage-profile/security/api-tokens\n* Run `gopass insert jir` and add the token in the form `myemail@mycompany.com:TOKEN`\n* Run `jir list builtin-configs` to see the list of available built-in configs and run\n  `jir install-builtin-config <config-name>`",
+    "args": [],
+    "flags": [
+      {
+        "name": "verbose",
+        "aliases": [
+          "v"
+        ],
+        "options": [],
+        "description": "When running HTTP commands, show the command (warning: contains auth)",
+        "arg": false,
+        "required": false
+      },
+      {
+        "name": "dry-run",
+        "aliases": [],
+        "options": [],
+        "description": "When running HTTP commands, show the command but don't execute (warning: contains auth)",
+        "arg": false,
+        "required": false
+      }
+    ],
+    "subs": [
+      {
+        "name": "completion",
+        "aliases": [],
+        "description": "Generate tab completion function to be added to your shell's profile",
+        "args": [],
+        "flags": [],
+        "subs": [
+          {
+            "name": "bash",
+            "aliases": [],
+            "description": "Generate tab completion function for bash or zsh. Add the output to your ~/.bash_profile or ~/.zsh_profile, or save the contents to a file and source the file from your ~/.bash_profile or ~/.zsh_profile",
+            "args": [],
+            "flags": [],
+            "subs": []
+          },
+          {
+            "name": "fish",
+            "aliases": [],
+            "description": "Generate tab completion function for fish",
+            "args": [],
+            "flags": [],
+            "subs": []
+          },
+          {
+            "name": "json",
+            "aliases": [],
+            "description": "Show JSON configuration for use with tabry-rs (faster tab completion)",
+            "args": [],
+            "flags": [],
+            "subs": []
+          }
+        ]
+      },
+      {
+        "name": "list",
+        "aliases": [],
+        "description": null,
+        "args": [],
+        "flags": [],
+        "subs": [
+          {
+            "name": "searches",
+            "aliases": [],
+            "description": "List searches in config",
+            "args": [],
+            "flags": [],
+            "subs": []
+          },
+          {
+            "name": "outputs",
+            "aliases": [],
+            "description": "List output styles in config",
+            "args": [],
+            "flags": [],
+            "subs": []
+          },
+          {
+            "name": "fields",
+            "aliases": [],
+            "description": "List standard fields and field aliases",
+            "args": [],
+            "flags": [
+              {
+                "name": "autocomplete-commas",
+                "aliases": [],
+                "options": [],
+                "description": "For internal usage, for autocomplete with commas",
+                "arg": false,
+                "required": false
+              }
+            ],
+            "subs": []
+          },
+          {
+            "name": "field-types",
+            "aliases": [],
+            "description": "List field types",
+            "args": [],
+            "flags": [],
+            "subs": []
+          },
+          {
+            "name": "config",
+            "aliases": [],
+            "description": "Show merged config as YML",
+            "args": [],
+            "flags": [],
+            "subs": []
+          },
+          {
+            "name": "builtin-configs",
+            "aliases": [],
+            "description": "Show list of built-in configs for use with install-builtin-config",
+            "args": [],
+            "flags": [],
+            "subs": []
+          },
+          {
+            "name": "users",
+            "aliases": [],
+            "description": "List users for use in user_list fields (users hash in config file)",
+            "args": [],
+            "flags": [],
+            "subs": []
+          },
+          {
+            "name": "state-names",
+            "aliases": [],
+            "description": "List state names (state_names in config file)",
+            "args": [],
+            "flags": [],
+            "subs": []
+          },
+          {
+            "name": "issue-types",
+            "aliases": [],
+            "description": "List issue types for a particular project or the default project",
+            "args": [
+              {
+                "name": "project",
+                "description": null,
+                "options": [],
+                "optional": true,
+                "varargs": false
+              }
+            ],
+            "flags": [],
+            "subs": []
+          },
+          {
+            "name": "link-verbs",
+            "aliases": [],
+            "description": "List link names (both directions) valid for use in jir link",
+            "args": [],
+            "flags": [],
+            "subs": []
+          },
+          {
+            "name": "named-sprints",
+            "aliases": [],
+            "description": "List named sprints defined in the configs",
+            "args": [],
+            "flags": [],
+            "subs": []
+          },
+          {
+            "name": "ticket-aliases",
+            "aliases": [],
+            "description": "List ticket_aliases defined in configs",
+            "args": [],
+            "flags": [],
+            "subs": []
+          }
+        ]
+      },
+      {
+        "name": "install-builtin-config",
+        "aliases": [],
+        "description": "Install a config from the built-in configs bundled with jir to the ~/.config/jir directory",
+        "args": [
+          {
+            "name": "config-name",
+            "description": "Run `jir list builtin-configs` to get a list of available configs",
+            "options": [
+              {
+                "type": "shell",
+                "value": "jir list builtin-configs"
+              }
+            ],
+            "optional": false,
+            "varargs": false
+          }
+        ],
+        "flags": [],
+        "subs": []
+      },
+      {
+        "name": "links",
+        "aliases": [],
+        "description": "Commands having to do with links between tickets",
+        "args": [],
+        "flags": [],
+        "subs": [
+          {
+            "name": "link",
+            "aliases": [],
+            "description": "Create a link between tickets",
+            "args": [
+              {
+                "include": "ticket-key"
+              },
+              {
+                "name": "verb",
+                "description": null,
+                "options": [
+                  {
+                    "type": "shell",
+                    "value": "jir list link-verbs"
+                  }
+                ],
+                "optional": false,
+                "varargs": false
+              },
+              {
+                "name": "ticket2-key",
+                "description": "Second ticket key",
+                "options": [],
+                "optional": false,
+                "varargs": false
+              }
+            ],
+            "flags": [
+              {
+                "include": "ticket-key"
+              },
+              {
+                "name": "comment",
+                "aliases": [],
+                "options": [],
+                "description": null,
+                "arg": true,
+                "required": false
+              }
+            ],
+            "subs": [
+              {
+                "include": "ticket-key"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "search",
+        "aliases": [
+          "s"
+        ],
+        "description": "Search using saved queries, multiple saved queries separated by commas, a JQL query, or\na mix\n\nExample yml config:\n  ls: 'summary ~ %1'\n  resolved-in-last: 'resolved >= -%1r' # 'r' means raw (unescaped) arg\n  grep: 'description ~ %1'\n  open: 'statusCategory != 3'\nExample search:\n  jir search open,ls,resolvedinlast,foo=bar somenamedoutput somethinginsummary 10w",
+        "args": [
+          {
+            "name": "name-or-query",
+            "description": "Name of search in config, or a JQL query",
+            "options": [
+              {
+                "type": "shell",
+                "value": "jir list searches"
+              }
+            ],
+            "optional": false,
+            "varargs": false
+          },
+          {
+            "include": "output-arg-and-flags"
+          },
+          {
+            "name": "search_args",
+            "description": "Arguments to named search. Must match max number %1, %2, %3, etc. in the named search. If given, output must also be given",
+            "options": [],
+            "optional": true,
+            "varargs": true
+          }
+        ],
+        "flags": [
+          {
+            "include": "output-arg-and-flags"
+          },
+          {
+            "name": "global",
+            "aliases": [
+              "g"
+            ],
+            "options": [],
+            "description": "global search -- do not include project=<default_project from config>",
+            "arg": false,
+            "required": false
+          },
+          {
+            "name": "all-pages",
+            "aliases": [],
+            "options": [],
+            "description": "Run search out output repeatedly to get all pages",
+            "arg": false,
+            "required": false
+          }
+        ],
+        "subs": [
+          {
+            "include": "output-arg-and-flags"
+          }
+        ]
+      },
+      {
+        "name": "get",
+        "aliases": [
+          "g",
+          "show"
+        ],
+        "description": "Get a ticket",
+        "args": [
+          {
+            "include": "ticket-key"
+          },
+          {
+            "include": "output-arg-and-flags"
+          }
+        ],
+        "flags": [
+          {
+            "include": "ticket-key"
+          },
+          {
+            "include": "output-arg-and-flags"
+          }
+        ],
+        "subs": [
+          {
+            "include": "ticket-key"
+          },
+          {
+            "include": "output-arg-and-flags"
+          }
+        ]
+      },
+      {
+        "name": "changelog",
+        "aliases": [
+          "cl"
+        ],
+        "description": "Show changelog for a ticket",
+        "args": [
+          {
+            "include": "ticket-key"
+          }
+        ],
+        "flags": [
+          {
+            "include": "ticket-key"
+          },
+          {
+            "name": "raw",
+            "aliases": [
+              "r"
+            ],
+            "options": [],
+            "description": "Output raw JSON",
+            "arg": false,
+            "required": false
+          },
+          {
+            "name": "all-pages",
+            "aliases": [],
+            "options": [],
+            "description": "Get all changelogs my paginating through all results",
+            "arg": false,
+            "required": false
+          }
+        ],
+        "subs": [
+          {
+            "include": "ticket-key"
+          }
+        ]
+      },
+      {
+        "name": "web",
+        "aliases": [
+          "w"
+        ],
+        "description": "Open ticket in default web browser",
+        "args": [
+          {
+            "include": "ticket-keys"
+          }
+        ],
+        "flags": [
+          {
+            "include": "ticket-keys"
+          }
+        ],
+        "subs": [
+          {
+            "include": "ticket-keys"
+          }
+        ]
+      },
+      {
+        "name": "transition",
+        "aliases": [],
+        "description": "Transition a ticket to another state",
+        "args": [
+          {
+            "include": "ticket-key"
+          },
+          {
+            "name": "state-name",
+            "description": "Name of state to transition to, from state_names in config file (see jir list state-names)",
+            "options": [
+              {
+                "type": "shell",
+                "value": "jir list state-names"
+              }
+            ],
+            "optional": false,
+            "varargs": false
+          }
+        ],
+        "flags": [
+          {
+            "include": "ticket-key"
+          }
+        ],
+        "subs": [
+          {
+            "include": "ticket-key"
+          }
+        ]
+      },
+      {
+        "name": "assign",
+        "aliases": [],
+        "description": "Assign a ticket to a user",
+        "args": [
+          {
+            "include": "ticket-key"
+          },
+          {
+            "name": "user",
+            "description": "A user in the users list in the config, or 'null' or empty string to empty out the assignee field",
+            "options": [
+              {
+                "type": "shell",
+                "value": "jir list users"
+              },
+              {
+                "type": "const",
+                "value": "null"
+              }
+            ],
+            "optional": false,
+            "varargs": false
+          }
+        ],
+        "flags": [
+          {
+            "include": "ticket-key"
+          }
+        ],
+        "subs": [
+          {
+            "include": "ticket-key"
+          }
+        ]
+      },
+      {
+        "name": "comment",
+        "aliases": [],
+        "description": "Comment on an issue (launches EDITOR, ot reads from STDIN if not a tty)",
+        "args": [
+          {
+            "include": "ticket-key"
+          },
+          {
+            "name": "filename",
+            "description": "Filename to use as comment instead of using editor or STDIN",
+            "options": [
+              {
+                "type": "file"
+              }
+            ],
+            "optional": true,
+            "varargs": false
+          }
+        ],
+        "flags": [
+          {
+            "include": "ticket-key"
+          }
+        ],
+        "subs": [
+          {
+            "include": "ticket-key"
+          }
+        ]
+      },
+      {
+        "name": "http",
+        "aliases": [],
+        "description": null,
+        "args": [
+          {
+            "name": "url",
+            "description": null,
+            "options": [],
+            "optional": false,
+            "varargs": false
+          },
+          {
+            "name": "args",
+            "description": null,
+            "options": [],
+            "optional": true,
+            "varargs": true
+          }
+        ],
+        "flags": [
+          {
+            "name": "no-api",
+            "aliases": [],
+            "options": [],
+            "description": "Don't add an 'api'",
+            "arg": false,
+            "required": false
+          },
+          {
+            "name": "api-version-3",
+            "aliases": [
+              "3"
+            ],
+            "options": [],
+            "description": "Use API version 3",
+            "arg": false,
+            "required": false
+          },
+          {
+            "name": "agile",
+            "aliases": [],
+            "options": [],
+            "description": "Use Agile Api (1.0)",
+            "arg": false,
+            "required": false
+          }
+        ],
+        "subs": [
+          {
+            "name": "get",
+            "aliases": [],
+            "description": null,
+            "args": [
+              {
+                "name": "url",
+                "description": null,
+                "options": [],
+                "optional": false,
+                "varargs": false
+              },
+              {
+                "name": "args",
+                "description": null,
+                "options": [],
+                "optional": true,
+                "varargs": true
+              }
+            ],
+            "flags": [],
+            "subs": []
+          },
+          {
+            "name": "post",
+            "aliases": [],
+            "description": null,
+            "args": [
+              {
+                "name": "url",
+                "description": null,
+                "options": [],
+                "optional": false,
+                "varargs": false
+              },
+              {
+                "name": "args",
+                "description": null,
+                "options": [],
+                "optional": true,
+                "varargs": true
+              }
+            ],
+            "flags": [],
+            "subs": []
+          },
+          {
+            "name": "put",
+            "aliases": [],
+            "description": null,
+            "args": [
+              {
+                "name": "url",
+                "description": null,
+                "options": [],
+                "optional": false,
+                "varargs": false
+              },
+              {
+                "name": "args",
+                "description": null,
+                "options": [],
+                "optional": true,
+                "varargs": true
+              }
+            ],
+            "flags": [],
+            "subs": []
+          }
+        ]
+      },
+      {
+        "name": "field",
+        "aliases": [
+          "fields",
+          "f"
+        ],
+        "description": null,
+        "args": [],
+        "flags": [],
+        "subs": [
+          {
+            "name": "set",
+            "aliases": [
+              "put",
+              "p",
+              "s"
+            ],
+            "description": "Set a field",
+            "args": [
+              {
+                "include": "ticket-key"
+              },
+              {
+                "name": "field",
+                "description": null,
+                "options": [
+                  {
+                    "type": "shell",
+                    "value": "jir list fields"
+                  }
+                ],
+                "optional": false,
+                "varargs": false
+              },
+              {
+                "name": "field-values",
+                "description": "To set a list type to an empty list, use an empty string for a value",
+                "options": [],
+                "optional": false,
+                "varargs": true
+              }
+            ],
+            "flags": [
+              {
+                "include": "ticket-key"
+              },
+              {
+                "name": "type",
+                "aliases": [
+                  "t"
+                ],
+                "options": [
+                  {
+                    "type": "shell",
+                    "value": "jir list field-types"
+                  }
+                ],
+                "description": "Specify how to convert the value given on command line to a JSON value for JIRA.\nExamples include 'raw' (raw JSON, use for numbers) and 'string'.\nSee 'jir list field-value-types' for a list.\nThis can be given in the jir.yml under field as the field's 'type', or overridden with this flag.",
+                "arg": true,
+                "required": false
+              }
+            ],
+            "subs": [
+              {
+                "include": "ticket-key"
+              }
+            ]
+          },
+          {
+            "name": "add",
+            "aliases": [
+              "a"
+            ],
+            "description": "Add a value to a list field",
+            "args": [
+              {
+                "include": "ticket-key"
+              },
+              {
+                "name": "field",
+                "description": null,
+                "options": [
+                  {
+                    "type": "shell",
+                    "value": "jir list fields"
+                  }
+                ],
+                "optional": false,
+                "varargs": false
+              },
+              {
+                "name": "field-values",
+                "description": null,
+                "options": [],
+                "optional": false,
+                "varargs": true
+              }
+            ],
+            "flags": [
+              {
+                "include": "ticket-key"
+              }
+            ],
+            "subs": [
+              {
+                "include": "ticket-key"
+              }
+            ]
+          },
+          {
+            "name": "remove",
+            "aliases": [
+              "rm"
+            ],
+            "description": "Remove a value from a list field",
+            "args": [
+              {
+                "include": "ticket-key"
+              },
+              {
+                "name": "field",
+                "description": null,
+                "options": [
+                  {
+                    "type": "shell",
+                    "value": "jir list fields"
+                  }
+                ],
+                "optional": false,
+                "varargs": false
+              },
+              {
+                "name": "field-values",
+                "description": null,
+                "options": [],
+                "optional": false,
+                "varargs": true
+              }
+            ],
+            "flags": [
+              {
+                "include": "ticket-key"
+              }
+            ],
+            "subs": [
+              {
+                "include": "ticket-key"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "render",
+        "aliases": [],
+        "description": "Render ADF or tickets to markdown; consider instead using get/search --render-to-markdown/--glow",
+        "args": [],
+        "flags": [],
+        "subs": [
+          {
+            "name": "text_to_adf",
+            "aliases": [],
+            "description": "(EXPERIMENTAL) STDIN Pretty Text to ADF as with create --pretty-description",
+            "args": [],
+            "flags": [],
+            "subs": []
+          },
+          {
+            "name": "raw",
+            "aliases": [],
+            "description": "Render ADF JSON to markdown",
+            "args": [
+              {
+                "name": "files",
+                "description": "Defaults to stdin",
+                "options": [
+                  {
+                    "type": "file"
+                  }
+                ],
+                "optional": true,
+                "varargs": true
+              }
+            ],
+            "flags": [],
+            "subs": []
+          },
+          {
+            "name": "ticket",
+            "aliases": [
+              "tickets"
+            ],
+            "description": "Render ticket to markdown -- output from search or should have description/comment/comments fields",
+            "args": [
+              {
+                "name": "files",
+                "description": "Defaults to stdin",
+                "options": [
+                  {
+                    "type": "file"
+                  }
+                ],
+                "optional": true,
+                "varargs": true
+              }
+            ],
+            "flags": [],
+            "subs": []
+          }
+        ]
+      },
+      {
+        "name": "agile",
+        "aliases": [],
+        "description": "Actions that touch the agile API -- boards, sprints",
+        "args": [],
+        "flags": [],
+        "subs": [
+          {
+            "name": "boards",
+            "aliases": [],
+            "description": "List boards for a given project",
+            "args": [
+              {
+                "name": "project",
+                "description": "Defaults to the default_project in config. Use empty string for all",
+                "options": [],
+                "optional": true,
+                "varargs": false
+              }
+            ],
+            "flags": [],
+            "subs": []
+          },
+          {
+            "name": "sprints",
+            "aliases": [],
+            "description": "List sprints for a board",
+            "args": [
+              {
+                "name": "board-id",
+                "description": "Defaults to the default_board_id in config",
+                "options": [],
+                "optional": true,
+                "varargs": false
+              }
+            ],
+            "flags": [
+              {
+                "name": "active-and-future",
+                "aliases": [],
+                "options": [],
+                "description": "Show future and active sprints",
+                "arg": false,
+                "required": false
+              },
+              {
+                "name": "future-only",
+                "aliases": [],
+                "options": [],
+                "description": "Show only future sprints",
+                "arg": false,
+                "required": false
+              },
+              {
+                "name": "closed",
+                "aliases": [
+                  "previous"
+                ],
+                "options": [],
+                "description": "Show closed (previous) sprints",
+                "arg": false,
+                "required": false
+              },
+              {
+                "name": "all-pages",
+                "aliases": [],
+                "options": [],
+                "description": "Paginate thru results to show all sprints",
+                "arg": false,
+                "required": false
+              },
+              {
+                "name": "summary",
+                "aliases": [],
+                "options": [],
+                "description": "Show simplified view of id, state, name, startDate, endDate, state",
+                "arg": false,
+                "required": false
+              }
+            ],
+            "subs": []
+          },
+          {
+            "name": "named-sprint",
+            "aliases": [],
+            "description": "Show a named sprint as defined in the configs",
+            "args": [
+              {
+                "name": "name",
+                "description": "Name of sprint in 'sprints' object in config (valid keys in each named sprint\nconfig: 'state', 'all_pages', 'jq', 'board_id')",
+                "options": [
+                  {
+                    "type": "shell",
+                    "value": "jir list named-sprints"
+                  }
+                ],
+                "optional": false,
+                "varargs": false
+              }
+            ],
+            "flags": [
+              {
+                "name": "all",
+                "aliases": [],
+                "options": [],
+                "description": "Show all sprints, not just the first",
+                "arg": false,
+                "required": false
+              }
+            ],
+            "subs": []
+          },
+          {
+            "name": "move-issue",
+            "aliases": [
+              "move",
+              "mv"
+            ],
+            "description": "Move issue to another sprint",
+            "args": [
+              {
+                "name": "sprint-id",
+                "description": "Numeric sprint ID. 'backlog', or named sprint from the config file",
+                "options": [
+                  {
+                    "type": "const",
+                    "value": "backlog"
+                  },
+                  {
+                    "type": "shell",
+                    "value": "jir list named-sprints"
+                  }
+                ],
+                "optional": false,
+                "varargs": false
+              },
+              {
+                "name": "ticket-keys",
+                "description": "'MYPROJECT-123' or just '123' if you have default_project defined",
+                "options": [],
+                "optional": false,
+                "varargs": true
+              }
+            ],
+            "flags": [
+              {
+                "name": "before-issue",
+                "aliases": [],
+                "options": [],
+                "description": null,
+                "arg": true,
+                "required": false
+              },
+              {
+                "name": "after-issue",
+                "aliases": [],
+                "options": [],
+                "description": null,
+                "arg": true,
+                "required": false
+              }
+            ],
+            "subs": []
+          },
+          {
+            "name": "rank",
+            "aliases": [],
+            "description": "Update rank of an issue or multiple issues",
+            "args": [
+              {
+                "name": "reference-ticket",
+                "description": "'MYPROJECT-123' or just '123' if you have default_project defined",
+                "options": [],
+                "optional": false,
+                "varargs": false
+              },
+              {
+                "name": "ticket-keys",
+                "description": "'MYPROJECT-123' or just '123' if you have default_project defined",
+                "options": [],
+                "optional": false,
+                "varargs": true
+              }
+            ],
+            "flags": [
+              {
+                "name": "before",
+                "aliases": [
+                  "b"
+                ],
+                "options": [],
+                "description": "Move tickets to before the first ticket given",
+                "arg": false,
+                "required": false
+              },
+              {
+                "name": "after",
+                "aliases": [
+                  "a"
+                ],
+                "options": [],
+                "description": "Move tickets to after the first ticket given. Default.",
+                "arg": false,
+                "required": false
+              }
+            ],
+            "subs": []
+          }
+        ]
+      },
+      {
+        "name": "attach",
+        "aliases": [],
+        "description": "Attachment-related commands / Attach file to ticket",
+        "args": [
+          {
+            "include": "ticket-key"
+          },
+          {
+            "name": "filename",
+            "description": "File to attach",
+            "options": [
+              {
+                "type": "file"
+              }
+            ],
+            "optional": false,
+            "varargs": false
+          }
+        ],
+        "flags": [
+          {
+            "include": "ticket-key"
+          }
+        ],
+        "subs": [
+          {
+            "include": "ticket-key"
+          },
+          {
+            "name": "download",
+            "aliases": [
+              "d"
+            ],
+            "description": "Download one attachment",
+            "args": [
+              {
+                "name": "attachment_id",
+                "description": "Use 'jir get 1234 attachments' to get the id",
+                "options": [],
+                "optional": false,
+                "varargs": false
+              }
+            ],
+            "flags": [],
+            "subs": []
+          },
+          {
+            "name": "download-all",
+            "aliases": [
+              "da"
+            ],
+            "description": "Download all attachments for an issue",
+            "args": [
+              {
+                "include": "ticket-key"
+              }
+            ],
+            "flags": [
+              {
+                "include": "ticket-key"
+              }
+            ],
+            "subs": [
+              {
+                "include": "ticket-key"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "create",
+        "aliases": [],
+        "description": "Create ticket",
+        "args": [
+          {
+            "name": "issue-type",
+            "description": null,
+            "options": [
+              {
+                "type": "shell",
+                "value": "jir list issue-types"
+              }
+            ],
+            "optional": false,
+            "varargs": false
+          },
+          {
+            "name": "summary",
+            "description": null,
+            "options": [],
+            "optional": false,
+            "varargs": false
+          },
+          {
+            "name": "fields",
+            "description": "Fields in format fieldname=fieldval1,fieldval2,fieldval3",
+            "options": [],
+            "optional": true,
+            "varargs": true
+          }
+        ],
+        "flags": [
+          {
+            "name": "description-file",
+            "aliases": [
+              "d",
+              "f"
+            ],
+            "options": [],
+            "description": "Filename to load description, otherwise will use editor",
+            "arg": true,
+            "required": false
+          },
+          {
+            "name": "project",
+            "aliases": [
+              "p"
+            ],
+            "options": [],
+            "description": "Project to use (default is to use default_project defined in config)",
+            "arg": false,
+            "required": false
+          },
+          {
+            "name": "json-description",
+            "aliases": [],
+            "options": [],
+            "description": "Use API version 3 ADF JSON description",
+            "arg": false,
+            "required": false
+          },
+          {
+            "name": "pretty-description",
+            "aliases": [],
+            "options": [],
+            "description": "Construct ADF JSON from a text file (EXPERIMENTAL)",
+            "arg": false,
+            "required": false
+          }
+        ],
+        "subs": []
+      },
+      {
+        "name": "watchers",
+        "aliases": [
+          "watcher",
+          "watch"
+        ],
+        "description": "Watcher actions",
+        "args": [],
+        "flags": [],
+        "subs": [
+          {
+            "name": "get",
+            "aliases": [
+              "ls"
+            ],
+            "description": "List watchers",
+            "args": [
+              {
+                "include": "ticket-key"
+              }
+            ],
+            "flags": [
+              {
+                "include": "ticket-key"
+              }
+            ],
+            "subs": [
+              {
+                "include": "ticket-key"
+              }
+            ]
+          },
+          {
+            "name": "add",
+            "aliases": [],
+            "description": "Add a watcher",
+            "args": [
+              {
+                "include": "ticket-key"
+              },
+              {
+                "include": "opt-arg-user"
+              }
+            ],
+            "flags": [
+              {
+                "include": "ticket-key"
+              },
+              {
+                "include": "opt-arg-user"
+              }
+            ],
+            "subs": [
+              {
+                "include": "ticket-key"
+              },
+              {
+                "include": "opt-arg-user"
+              }
+            ]
+          },
+          {
+            "name": "remove",
+            "aliases": [
+              "delete",
+              "del",
+              "rm"
+            ],
+            "description": "Remove a watcher",
+            "args": [
+              {
+                "include": "ticket-key"
+              },
+              {
+                "include": "opt-arg-user"
+              }
+            ],
+            "flags": [
+              {
+                "include": "ticket-key"
+              },
+              {
+                "include": "opt-arg-user"
+              }
+            ],
+            "subs": [
+              {
+                "include": "ticket-key"
+              },
+              {
+                "include": "opt-arg-user"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "arg_includes": {
+    "output-arg-and-flags": {
+      "args": [
+        {
+          "name": "output",
+          "description": "Name of output style in config",
+          "options": [
+            {
+              "type": "shell",
+              "value": "jir list outputs"
+            }
+          ],
+          "optional": true,
+          "varargs": false
+        }
+      ],
+      "flags": [
+        {
+          "name": "max-results",
+          "aliases": [
+            "max",
+            "m"
+          ],
+          "options": [],
+          "description": "max results",
+          "arg": true,
+          "required": false
+        },
+        {
+          "name": "fields",
+          "aliases": [
+            "f"
+          ],
+          "options": [
+            {
+              "type": "shell",
+              "value": "jir list fields --autocomplete-commas"
+            }
+          ],
+          "description": "restrict fields to return -- comma-separated",
+          "arg": true,
+          "required": false
+        },
+        {
+          "name": "api-version-3",
+          "aliases": [
+            "3"
+          ],
+          "options": [],
+          "description": "Use API Version 3 (output format will differ)",
+          "arg": false,
+          "required": false
+        },
+        {
+          "name": "rendered-fields",
+          "aliases": [],
+          "options": [],
+          "description": "Send expand=renderedFields",
+          "arg": false,
+          "required": false
+        },
+        {
+          "name": "render-to-markdown",
+          "aliases": [],
+          "options": [],
+          "description": "Render ticket to markdown (for compatible output types such as 'all')",
+          "arg": false,
+          "required": false
+        },
+        {
+          "name": "glow",
+          "aliases": [],
+          "options": [],
+          "description": "Pass markdown to glow (implies --render-to-markdown)",
+          "arg": false,
+          "required": false
+        },
+        {
+          "name": "pipe",
+          "aliases": [],
+          "options": [],
+          "description": "Pipe to command (mainly useful for overriding pipe specified by output in config)",
+          "arg": false,
+          "required": false
+        },
+        {
+          "name": "order",
+          "aliases": [],
+          "options": [],
+          "description": "ORDER BY clause (overrides any 'order' in the search/output)",
+          "arg": true,
+          "required": false
+        }
+      ],
+      "subs": []
+    },
+    "ticket-key": {
+      "args": [
+        {
+          "name": "ticket-key",
+          "description": "'MYPROJECT-123'. If you have default_project defined, you can use just '123', or 'git/MYREF' to get the ticket out of a git commit message (also supported: use 'git' for HEAD, 'git@~2' for two commits)",
+          "options": [
+            {
+              "type": "shell",
+              "value": "jir list ticket-aliases"
+            }
+          ],
+          "optional": false,
+          "varargs": false
+        }
+      ],
+      "flags": [],
+      "subs": []
+    },
+    "opt-arg-user": {
+      "args": [
+        {
+          "name": "user",
+          "description": "A user in the users list in the config (if not given looks for a user named \"default\" in the config)",
+          "options": [
+            {
+              "type": "shell",
+              "value": "jir list users"
+            }
+          ],
+          "optional": true,
+          "varargs": false
+        }
+      ],
+      "flags": [],
+      "subs": []
+    },
+    "ticket-keys": {
+      "args": [
+        {
+          "name": "ticket-keys",
+          "description": "'MYPROJECT-123' or 'git:ref' as with ticket-key arg in jir show. But, you can also give multiple tickets/git refs joined with a comma.",
+          "options": [
+            {
+              "type": "shell",
+              "value": "jir list ticket-aliases"
+            }
+          ],
+          "optional": false,
+          "varargs": false
+        }
+      ],
+      "flags": [],
+      "subs": []
+    }
+  },
+  "option_includes": {}
+}

@@ -1,0 +1,11 @@
+#!/usr/bin/env -S ruby --disable-gems
+require_relative '../bundler_cache_hack'
+
+# Run the app
+require 'tabry/cli/builder'
+require 'tabry/cli/all_in_one'
+require_relative '../lib/jir/cli.rb'
+
+builder = Tabry::CLI::Builder.new("#{__dir__}/../tabry/jir.json", Jir::CLI)
+Tabry::CLI::AllInOne.define_completion_methods(Jir::CLI, builder.runner.config)
+builder.run(ARGV)

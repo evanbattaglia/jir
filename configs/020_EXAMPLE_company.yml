@@ -1,0 +1,69 @@
+base_url: https://mycompany.atlassian.net
+
+state_names:
+  - To Do
+  - In Progress
+  - Done
+
+searches:
+  sprint:
+    jql: "Sprint in openSprints() AND Sprint not in futureSprints()"
+    order: rank
+    output: sprint
+  sprintnamed:
+    jql: "Sprint=%1"
+    order: rank
+    output: sprint
+  prevsprint:
+    sprint: previous
+    order: rank
+  lastsprint:
+    sprint: previous
+    order: rank
+  nextsprint:
+    sprint: next
+    order: rank
+  currentsprint:
+    sprint: current
+    order: rank
+  thissprint:
+    sprint: current
+    order: rank
+
+fields:
+  storypoints:
+    key: customfield_10001
+    type: raw
+  points:
+    key: customfield_10001
+    type: raw
+  labels:
+    key: labels
+    type: string_list
+  issuetype:
+    key: issuetype
+    type: object_keyed_by_name
+  parent:
+    key: parent
+    type: ticket
+  epic: # Alias for 'parent'
+    key: parent
+    type: ticket
+
+outputs:
+  commits:
+    fields: customfield_10123
+    jq:
+      - -r
+      - '.issues[].fields.customfield_10123'
+
+sprints:
+  previous:
+    state: closed
+    all_pages: true
+    jq: 'sort_by(.startDate)|reverse'
+  next:
+    state: future
+    jq: 'map(select(.startDate))|sort_by(.startDate)'
+  current:
+    state: active
