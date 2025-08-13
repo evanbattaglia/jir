@@ -1,6 +1,7 @@
+require_relative '../../spec_helper'
 require_relative '../../../lib/jir/search_builder'
 
-describe Jir::SearchBuilder do
+RSpec.describe Jir::SearchBuilder do
   before(:all) do
     @fixture = YAML.load_file(File.expand_path("../../fixtures/example.yml", __dir__))
   end
@@ -68,12 +69,12 @@ describe Jir::SearchBuilder do
   it 'raises an error if a named output is not found' do
     expect do
       described_class.build("foo=123", "bogus")
-    end.to raise_error /Output "bogus" not found in config file/
+    end.to raise_error(/Output "bogus" not found in config file/)
   end
 
   it 'raises an error if a named output referenced by a named search is not found' do
     expect do
       described_class.build("search_with_unknown_output", nil)
-    end.to raise_error /Output "bogus" not found in config file/
+    end.to raise_error(/Output "bogus" not found in config file/)
   end
 end

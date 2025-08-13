@@ -28,7 +28,7 @@ module Jir
           end
         end
 
-        node['marks']&.each { |m| builder.close_mark(m) }
+        node['marks']&.reverse&.each { |m| builder.close_mark(m) }
         builder.close_node(node) unless inline
       end
     end

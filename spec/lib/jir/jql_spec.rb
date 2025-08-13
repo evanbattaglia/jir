@@ -1,6 +1,7 @@
+require_relative '../../spec_helper'
 require_relative '../../../lib/jir/jql'
 
-describe Jir::Jql do
+RSpec.describe Jir::Jql do
   it 'renders escaped arguments' do
     actual = described_class.new("abc=%1 and def=%2").render(["foo", "bar"])
     expected = 'abc="foo" and def="bar"'
