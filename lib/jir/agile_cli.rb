@@ -71,7 +71,6 @@ module Jir
         puts "Moving into sprint: #{sprint_name}"
       end
 
-      # TODO current, future maybe?
       extra = "issues:=%s"
       extra_args = [args.ticket_keys.map{|k| ticket_key(k)}.to_json]
       if flags.before_issue

@@ -23,7 +23,7 @@ module Jir
     def _download(id)
       jira(
         "attachment/content/#{id}",
-        extra_before: "-F -d",
+        extra_before: "--follow --download",
         api_version_3: true,
       )
     end

@@ -14,8 +14,12 @@ module Jir
       unless File.exist?(full_builtin_path)
         raise "Built-in config file #{full_builtin_path.inspect} does not exist"
       end
+      dest_path = "#{Config.config_dir}/#{config_name}.yml"
+      if File.exist?(dest_path)
+        raise "Destination config file #{dest_path.inspect} already exists"
+      end
       FileUtils.mkdir_p Config.config_dir
-      File.symlink full_builtin_path, "#{Config.config_dir}/#{config_name}.yml"
+      FileUtils.cp full_builtin_path, dest_path
     end
 
     private_class_method
