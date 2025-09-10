@@ -4,6 +4,8 @@ require_relative 'field_types'
 
 module Jir
   class SearchCLI < BaseCLI
+    JQL_MAX_RESULTS = 5000
+
     # TODO:
     def search
       search = SearchBuilder.build(args.name_or_query, args.output)
@@ -27,6 +29,10 @@ module Jir
           yield start_at, f.path
           JSON.parse(File.read(f))
         end
+
+        break if raw['isLast']
+
+        # TODO: not working it seems, but isLast is true for now
         start_at += raw['maxResults']
         break if start_at > raw['total']
       end
@@ -41,7 +47,7 @@ module Jir
     end
 
     def execute_search(search, start_at: 0, tee: nil, max_results: nil, search_args: nil, use_default_project:)
-      max_results ||= flags.max_results || search&.max_results || -1
+      max_results ||= flags.max_results || search&.max_results || JQL_MAX_RESULTS
       fields = flags.fields || search&.fields
       rendered_fields = flags.rendered_fields || search&.rendered_fields
       api_version_3 = flags.api_version_3 || search&.api_version_3
@@ -96,7 +102,7 @@ module Jir
       pipe = search&.pipe || flags.pipe
       extra << " | #{pipe}" if pipe
 
-      jira 'search', extra, extra_args, api_version_3: api_version_3
+      jira 'search/jql', extra, extra_args, api_version_3: api_version_3
     end
 
     def get

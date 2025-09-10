@@ -15,6 +15,7 @@ module Jir
       # then could remove user_list and use object_key=accountId and aliases: users
       object_keyed_by_name: -> (str) { {name: str}.to_json },
       object_keyed_by_key: -> (str) { {key: str}.to_json },
+      object_keyed_by_id: -> (str) { {id: str}.to_json },
       ticket: -> str { {key: TicketKeyResolver.ticket_key(str)}.to_json },
     }
     # For field types that can take multiple values, the string values will be fed to this first
