@@ -11,8 +11,8 @@ module Jir
       search = SearchBuilder.build(args.name_or_query, args.output)
       opts = {search_args: args.search_args, use_default_project: !flags.global}
       if flags.all_pages
-        paginate_all do |start_at, raw_dest|
-          execute_search(search, **opts, start_at: start_at, tee: raw_dest)
+        paginate_all do |next_page_token, raw_dest|
+          execute_search(search, **opts, next_page_token:, tee: raw_dest)
         end
       else
         execute_search(search, **opts)
@@ -22,19 +22,17 @@ module Jir
     # TODO this is quite a hack, should just load the raw stuff into memory
     # instead of tee-ing. it's just annoying to push what's in memory to jq...
     def paginate_all
-      start_at = 0
+      next_page_token = nil
       loop do
         raw = Tempfile.open do |f|
           f.close
-          yield start_at, f.path
+          yield next_page_token, f.path
           JSON.parse(File.read(f))
         end
 
         break if raw['isLast']
 
-        # TODO: not working it seems, but isLast is true for now
-        start_at += raw['maxResults']
-        break if start_at > raw['total']
+        next_page_token = raw['nextPageToken']
       end
     end
 
@@ -46,7 +44,7 @@ module Jir
       end
     end
 
-    def execute_search(search, start_at: 0, tee: nil, max_results: nil, search_args: nil, use_default_project:)
+    def execute_search(search, next_page_token: nil, tee: nil, max_results: nil, search_args: nil, use_default_project:)
       max_results ||= flags.max_results || search&.max_results || JQL_MAX_RESULTS
       fields = flags.fields || search&.fields
       rendered_fields = flags.rendered_fields || search&.rendered_fields
@@ -69,8 +67,13 @@ module Jir
       if order.to_s != ''
         jql += " ORDER BY #{order}"
       end
-      extra = 'jql==%s maxResults==%s startAt==%s'
-      extra_args = [jql, max_results, start_at]
+      if next_page_token.to_s != ""
+        extra = 'jql==%s maxResults==%s nextPageToken==%s'
+        extra_args = [jql, max_results, next_page_token]
+      else
+        extra = 'jql==%s maxResults==%s'
+        extra_args = [jql, max_results]
+      end
 
       if fields
         # Lookup field aliases:
