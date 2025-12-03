@@ -8,6 +8,9 @@ module Jir
     # TODO: probably add descriptions for documentation
     FIELD_TYPE_STRING_TO_JSON_FUNCTIONS = {
       raw: -> (str) { str },
+      adf_text: -> (str) {
+        {type: "doc", version: 1, content: [ { type: "paragraph", content: [ { type: "text", text: str } ] } ] }.to_json
+      },
       string: -> (str) { str.to_json },
       # TODO should probably make more generic, any object with wrapper, but
       # that would require an extra parameter "object_key" or something which
