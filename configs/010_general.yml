@@ -41,6 +41,10 @@ outputs:
     fields: "*all"
     api_version_3: true
     render_to_markdown: true
+  md:
+    fields: "*all"
+    api_version_3: true
+    render_to_markdown: true
 
   glow:
     fields: "*all"
