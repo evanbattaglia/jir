@@ -20,9 +20,13 @@ module Jir
       end
       httpie_args << desc_field
 
+      summary = args.summary
+      summary = "\\#{summary}" if summary.start_with?("@")
+      description = "\\#{description}" if description.start_with?("@")
+
       httpie_params = [
         args.project || Config.default_project,
-        args.summary,
+        summary,
         args.issue_type,
         description,
       ]

@@ -90,6 +90,9 @@ module Jir
         exit 1
       end
 
+      # Escape leading @ so http doesn't interpret it as a file reference (body=@file)
+      body = "\\#{body}" if body.start_with?("@")
+
       jira("issue/#{ticket_key}/comment", "body=%s", [body], method: :post)
     end
   end
