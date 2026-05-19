@@ -261,6 +261,14 @@ sub attach "Attachment-related commands / Attach file to ticket" {
   sub download-all,da "Download all attachments for an issue" {
     include @ticket-key
   }
+
+  sub delete,del,rm "Delete one or more attachments from a ticket by ID" {
+    varargs attachment-ids "Use 'jir get 1234 attachments' to get the ids"
+  }
+
+  sub delete-all "Delete all attachments from a ticket" {
+    include @ticket-key
+  }
 }
 
 sub create "Create ticket" {

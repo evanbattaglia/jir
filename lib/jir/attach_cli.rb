@@ -34,6 +34,30 @@ module Jir
         end
       end
     end
+
+    def delete
+      args.attachment_ids.each { |id| _delete(id) }
+    end
+
+    def _delete(id)
+      jira(
+        "attachment/#{id}",
+        "%s",
+        ["X-Atlassian-Token: nocheck"],
+        method: :delete,
+        api_version_3: true,
+      )
+    end
+
+    def delete_all
+      ids = []
+      jira_json_each_page("issue/#{ticket_key}?fields=attachment") do |json|
+        json&.dig("fields", "attachment")&.each do |attachment|
+          ids << attachment["id"]
+        end
+      end
+      ids.each { |id| _delete(id) }
+    end
   end
 end
 

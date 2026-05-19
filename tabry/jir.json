@@ -1119,6 +1119,45 @@
                 "include": "ticket-key"
               }
             ]
+          },
+          {
+            "name": "delete",
+            "aliases": [
+              "del",
+              "rm"
+            ],
+            "description": "Delete one or more attachments from a ticket by ID",
+            "args": [
+              {
+                "name": "attachment-ids",
+                "description": "Use 'jir get 1234 attachments' to get the ids",
+                "options": [],
+                "optional": false,
+                "varargs": true
+              }
+            ],
+            "flags": [],
+            "subs": []
+          },
+          {
+            "name": "delete-all",
+            "aliases": [],
+            "description": "Delete all attachments from a ticket",
+            "args": [
+              {
+                "include": "ticket-key"
+              }
+            ],
+            "flags": [
+              {
+                "include": "ticket-key"
+              }
+            ],
+            "subs": [
+              {
+                "include": "ticket-key"
+              }
+            ]
           }
         ]
       },
