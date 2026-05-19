@@ -9,7 +9,8 @@ module Jir
     end
 
     def named_sprint
-      puts JSON.pretty_generate(Api.get_named_sprint(args.name, all: !!flags.all))
+      result = Api.get_named_sprint(args.name, all: !!flags.all, dry_run: flags.dry_run)
+      puts JSON.pretty_generate(result) unless flags.dry_run
     end
 
     # TODO: pagination. just shows the first page.

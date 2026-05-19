@@ -48,7 +48,7 @@ sub install-builtin-config "Install a config from the built-in configs bundled w
 sub links "Commands having to do with links between tickets" {
   sub link "Create a link between tickets" {
     include @ticket-key
-    arg verb { opts shell "jir list link-verbs" }
+    arg verb "Linking verb, use jir list link-verbs to see options" { opts shell "jir list link-verbs" }
     arg ticket2-key "Second ticket key"
     flagarg comment
   }
@@ -252,7 +252,7 @@ sub agile "Actions that touch the agile API -- boards, sprints" {
 
 sub attach "Attachment-related commands / Attach file to ticket" {
   include @ticket-key
-  arg filename "File to attach" { opts file }
+  varargs filenames "Files to attach" { opts file }
 
   sub download,d "Download one attachment" {
     arg attachment_id "Use 'jir get 1234 attachments' to get the id"

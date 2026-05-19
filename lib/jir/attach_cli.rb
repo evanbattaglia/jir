@@ -3,13 +3,12 @@ require_relative 'base_cli'
 module Jir
   class AttachCLI < BaseCLI
     def main
+      filenames = args.filenames
+      file_placeholders = filenames.map { "file@%s" }.join(" ")
       jira(
         "issue/#{ticket_key}/attachments",
-        "%s file@%s",
-        [
-          "X-Atlassian-Token: nocheck",
-          args.filename
-        ],
+        "%s #{file_placeholders}",
+        ["X-Atlassian-Token: nocheck"] + filenames,
         extra_before: '--form',
         method: :post,
         api_version_3: true

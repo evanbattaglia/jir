@@ -71,7 +71,7 @@ module Jir
     end
 
     # Get a named sprint from the config
-    def get_named_sprint(name, all: false, require_one: false)
+    def get_named_sprint(name, all: false, require_one: false, dry_run: false)
       require 'open3'
       criteria = Config.sprints&.dig(name) or raise "No such sprint in config: #{name}"
       board_id = criteria['board_id'] || Config.default_board_id
@@ -82,11 +82,12 @@ module Jir
         "state==%s",
         [criteria['state'] || 'active'],
         first_page_only: !criteria['all_pages'],
-        verbose: false, dry_run: false,
+        verbose: false, dry_run: dry_run,
         api_agile: true
       ) do |json|
         sprints.concat json['values']
       end
+      return if dry_run
 
       if criteria['jq']
         Open3.popen3("jq", "-c", criteria['jq']) do |stdin, out, err, _wait|

@@ -219,7 +219,7 @@
               },
               {
                 "name": "verb",
-                "description": null,
+                "description": "Linking verb, use jir list link-verbs to see options",
                 "options": [
                   {
                     "type": "shell",
@@ -1060,15 +1060,15 @@
             "include": "ticket-key"
           },
           {
-            "name": "filename",
-            "description": "File to attach",
+            "name": "filenames",
+            "description": "Files to attach",
             "options": [
               {
                 "type": "file"
               }
             ],
             "optional": false,
-            "varargs": false
+            "varargs": true
           }
         ],
         "flags": [
@@ -1389,24 +1389,6 @@
       ],
       "subs": []
     },
-    "ticket-key": {
-      "args": [
-        {
-          "name": "ticket-key",
-          "description": "'MYPROJECT-123'. If you have default_project defined, you can use just '123', or 'git/MYREF' to get the ticket out of a git commit message (also supported: use 'git' for HEAD, 'git@~2' for two commits)",
-          "options": [
-            {
-              "type": "shell",
-              "value": "jir list ticket-aliases"
-            }
-          ],
-          "optional": false,
-          "varargs": false
-        }
-      ],
-      "flags": [],
-      "subs": []
-    },
     "opt-arg-user": {
       "args": [
         {
@@ -1419,6 +1401,24 @@
             }
           ],
           "optional": true,
+          "varargs": false
+        }
+      ],
+      "flags": [],
+      "subs": []
+    },
+    "ticket-key": {
+      "args": [
+        {
+          "name": "ticket-key",
+          "description": "'MYPROJECT-123'. If you have default_project defined, you can use just '123', or 'git/MYREF' to get the ticket out of a git commit message (also supported: use 'git' for HEAD, 'git@~2' for two commits)",
+          "options": [
+            {
+              "type": "shell",
+              "value": "jir list ticket-aliases"
+            }
+          ],
+          "optional": false,
           "varargs": false
         }
       ],
