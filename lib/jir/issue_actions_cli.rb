@@ -1,11 +1,12 @@
 require 'json'
 require_relative 'base_cli'
 require_relative 'config'
+require_relative 'adf/text_to_adf'
 
 module Jir
   class IssueActionsCLI < BaseCLI
     def comment
-      write_comment(text_from_file_or_editor(args.filename))
+      write_comment(text_from_file_or_editor(args.filename), pretty: !!flags.pretty_comment)
     end
 
     def transition
@@ -82,7 +83,7 @@ module Jir
       jira "issue/#{ticket_key}/watchers", *args, api_version_3: true, **kwargs
     end
 
-    def write_comment(body)
+    def write_comment(body, pretty: false)
       body = body.strip
 
       if body.empty?
@@ -90,10 +91,17 @@ module Jir
         exit 1
       end
 
+      if pretty
+        body = TextToAdf.text_to_adf(body).to_json
+        httpie_arg = "body:=%s"
+      else
+        httpie_arg = "body=%s"
+      end
+
       # Escape leading @ so http doesn't interpret it as a file reference (body=@file)
       body = "\\#{body}" if body.start_with?("@")
 
-      jira("issue/#{ticket_key}/comment", "body=%s", [body], method: :post)
+      jira("issue/#{ticket_key}/comment", httpie_arg, [body], method: :post, api_version_3: pretty)
     end
   end
 end

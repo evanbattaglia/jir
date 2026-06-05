@@ -502,6 +502,14 @@
         "flags": [
           {
             "include": "ticket-key"
+          },
+          {
+            "name": "pretty-comment",
+            "aliases": [],
+            "options": [],
+            "description": "Construct ADF JSON from the comment text (EXPERIMENTAL)",
+            "arg": false,
+            "required": false
           }
         ],
         "subs": [

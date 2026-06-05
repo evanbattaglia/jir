@@ -117,6 +117,7 @@ sub assign "Assign a ticket to a user" {
 sub comment "Comment on an issue (launches EDITOR, ot reads from STDIN if not a tty)" {
   include @ticket-key
   opt arg filename "Filename to use as comment instead of using editor or STDIN" { opts file }
+  flag pretty-comment "Construct ADF JSON from the comment text (EXPERIMENTAL)"
 }
 
 
