@@ -240,12 +240,94 @@ RSpec.describe Jir::TextToAdf do
 
     it 'handles input with only whitespace' do
       result = described_class.text_to_adf("   \n  \n   ")
-      
+
       expect(result).to eq({
         type: "doc",
         version: 1,
         content: []
       })
+    end
+
+    it 'converts headings at various levels' do
+      result = described_class.text_to_adf("# Title\n### Subsection")
+
+      expect(result[:content][0]).to eq({
+        type: "heading",
+        attrs: {level: 1},
+        content: [{type: "text", text: "Title"}]
+      })
+      expect(result[:content][1][:attrs][:level]).to eq(3)
+    end
+
+    it 'converts inline bold, italic and code marks' do
+      result = described_class.text_to_adf("a **b** _c_ *d* `e`")
+
+      content = result[:content][0][:content]
+      marked = content.reject { |n| n[:marks].nil? }
+      expect(marked.map { |n| [n[:text], n[:marks][0][:type]] }).to eq([
+        ["b", "strong"],
+        ["c", "em"],
+        ["d", "em"],
+        ["e", "code"],
+      ])
+    end
+
+    it 'converts links' do
+      result = described_class.text_to_adf("see [the docs](https://example.com)")
+
+      link_node = result[:content][0][:content].last
+      expect(link_node[:text]).to eq("the docs")
+      expect(link_node[:marks]).to eq([{type: "link", attrs: {href: "https://example.com"}}])
+    end
+
+    it 'parses marks inside headings' do
+      result = described_class.text_to_adf("## A **bold** word")
+
+      heading = result[:content][0]
+      expect(heading[:type]).to eq("heading")
+      expect(heading[:content][1]).to eq({type: "text", text: "bold", marks: [{type: "strong"}]})
+    end
+
+    it 'does not treat snake_case or multiplication as italic' do
+      result = described_class.text_to_adf("use some_var_name and 5 * 3 * 2")
+
+      content = result[:content][0][:content]
+      expect(content.length).to eq(1)
+      expect(content[0][:marks]).to be_nil
+      expect(content[0][:text]).to eq("use some_var_name and 5 * 3 * 2")
+    end
+
+    it 'converts ordered lists' do
+      result = described_class.text_to_adf("1. first\n2. second\n3. third")
+
+      list = result[:content][0]
+      expect(list[:type]).to eq("orderedList")
+      expect(list[:content].length).to eq(3)
+      expect(list[:content][0][:content][0][:content][0][:text]).to eq("first")
+    end
+
+    it 'nests a bullet list under an ordered list' do
+      text = <<~TEXT
+        1. outer
+          * inner bullet
+        2. outer two
+      TEXT
+      result = described_class.text_to_adf(text)
+
+      outer = result[:content][0]
+      expect(outer[:type]).to eq("orderedList")
+      expect(outer[:content].length).to eq(2)
+
+      nested = outer[:content][0][:content][1]
+      expect(nested[:type]).to eq("bulletList")
+      expect(nested[:content].length).to eq(1)
+    end
+
+    it 'does not treat a line starting with bold as a bullet' do
+      result = described_class.text_to_adf("**important** note")
+
+      expect(result[:content][0][:type]).to eq("paragraph")
+      expect(result[:content][0][:content][0]).to eq({type: "text", text: "important", marks: [{type: "strong"}]})
     end
   end
 end
